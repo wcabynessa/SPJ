@@ -2,10 +2,10 @@ package qp.operators;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.ObjectOutputStream;
 
 import qp.utils.Attribute;
@@ -144,6 +144,16 @@ public class BlockNestedJoin extends Join {
                         break;
                     }
                 }
+            }
+
+            // Whenever a new left page comes, we have to start the scanning of the 
+            // right table
+            try {
+                in = new ObjectInputStream(new FileInputStream(rfname));
+                eosr=false;
+            } catch (IOException io) {
+                System.err.println("BlockNestedJoin:error in reading the file");
+                System.exit(1);
             }
 
             while (eosr == false) {
