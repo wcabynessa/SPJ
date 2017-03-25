@@ -85,7 +85,7 @@ public class BlockNestedJoin extends Join {
             return false;
         } else {
             filenum++;
-            rfname = "NJtemp-" + String.valueOf(filenum);
+            rfname = "BNJtemp-" + String.valueOf(filenum);
 
             try {
                 ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(rfname));
