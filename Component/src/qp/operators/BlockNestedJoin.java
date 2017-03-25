@@ -134,8 +134,6 @@ public class BlockNestedJoin extends Join {
 
                 for (int i = 0;  i < getNumBuff() - 2;  i++) {
                     leftBlock[i] = (Batch) left.next();
-                    leftBlockSize++;
-
                     if (leftBlock[i] == null) {
                         if (i == 0) {
                             eosl = true;
@@ -143,17 +141,18 @@ public class BlockNestedJoin extends Join {
                         }
                         break;
                     }
+                    leftBlockSize++;
                 }
-            }
 
-            // Whenever a new left page comes, we have to start the scanning of the 
-            // right table
-            try {
-                in = new ObjectInputStream(new FileInputStream(rfname));
-                eosr=false;
-            } catch (IOException io) {
-                System.err.println("BlockNestedJoin:error in reading the file");
-                System.exit(1);
+                // Whenever a new left page comes, we have to restart the scanning of the 
+                // right table
+                try {
+                    in = new ObjectInputStream(new FileInputStream(rfname));
+                    eosr=false;
+                } catch (IOException io) {
+                    System.err.println("BlockNestedJoin:error in reading the file");
+                    System.exit(1);
+                }
             }
 
             while (eosr == false) {
@@ -190,6 +189,7 @@ public class BlockNestedJoin extends Join {
                                             lcurs = j;
                                             rcurs = t + 1;
                                         }
+                                        return outBatch;
                                     }
                                 }
                             }  // t loop
@@ -198,6 +198,7 @@ public class BlockNestedJoin extends Join {
                         lcurs = 0;
                     }  // i loop
                     batchIndex = 0;
+
                 }  catch (EOFException e) {
                     try {
                         in.close();
@@ -205,9 +206,11 @@ public class BlockNestedJoin extends Join {
                         System.out.println("BlockNestedJoin:Error in temporary file reading");
                     }
                     eosr=true;
+
                 } catch (ClassNotFoundException c) {
                     System.out.println("BlockNestedJoin:Some error in deserialization ");
                     System.exit(1);
+
                 } catch (IOException io) {
                     System.out.println("BlockNestedJoin:temporary file reading error");
                     System.exit(1);
