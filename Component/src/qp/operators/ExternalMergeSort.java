@@ -60,7 +60,7 @@ public class ExternalMergeSort extends Operator {
      * Sort the list of tuples with given index.
      */
     public void sortTuples(Tuple[] tuples, int tupleCount, int index) {
-        Arrays.sort(tuples, new Comparator<Tuple>() {
+        Arrays.sort(tuples, 0, tupleCount, new Comparator<Tuple>() {
             public int compare(Tuple t1, Tuple t2) {
                return Tuple.compareTuples(t1, t2, index);
             }
@@ -81,7 +81,7 @@ public class ExternalMergeSort extends Operator {
             batch.add(tuples[i]);
             if (batch.isFull()) {
                 out.writeObject(batch);
-                batch.clear();
+                batch = new Batch(batchSize);
             }
         }
         if (!batch.isEmpty()) {
@@ -139,7 +139,11 @@ public class ExternalMergeSort extends Operator {
         for (int i = starting;  i < ending;  i++) {
             int index = i - starting;  // Index of batch of this run stored in memory
             if (cursors[index] == 0) {
-                inBatches[index] = runs.get(i).next();
+                if (runs.get(i).eos) {
+                    inBatches[index] = null;
+                } else {
+                    inBatches[index] = runs.get(i).next();
+                }
             }
 
             if (inBatches[index] != null) {
@@ -172,7 +176,10 @@ public class ExternalMergeSort extends Operator {
                 String fileName = "EMStemp-" + filenum;
                 ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
 
-                int ending = Math.min(starting + getNumBuff(), runs.size());
+                int ending = Math.min(starting + getNumBuff() - 1, runs.size());
+                for (int i = starting;  i < ending;  i++) {
+                    runs.get(i).open();
+                }
 
                 // Repeat finding smallest tuple and output it
                 Tuple tuple;
@@ -180,7 +187,7 @@ public class ExternalMergeSort extends Operator {
                     outBatch.add(tuple);
                     if (outBatch.isFull()) {
                         out.writeObject(outBatch);
-                        outBatch.clear();
+                        outBatch = new Batch(batchSize);
                     }
                 }
                 // Print the rest of output buffer
@@ -196,6 +203,10 @@ public class ExternalMergeSort extends Operator {
            }
         }
 
+        // Delete all current runs and replace it with new runs
+        for (int i = 0;  i < runs.size();  i++) {
+            runs.get(i).close();
+        }
         runs = tempRuns;
     }
 
@@ -214,6 +225,7 @@ public class ExternalMergeSort extends Operator {
             return false;
         }
 
+        runs = new ArrayList<Run>();
         createFirstPassMergeRuns();
         while (runs.size() > 1) {
             performMergeSort();
@@ -229,6 +241,7 @@ public class ExternalMergeSort extends Operator {
 
     public Batch next() {
         if (eos || finalRun == null) {
+            close();
             return null;
         }
         Batch batch = finalRun.next();
@@ -241,6 +254,9 @@ public class ExternalMergeSort extends Operator {
     }
 
     public boolean close() {
+        if (finalRun != null) {
+            finalRun.close();
+        }
         return true;
     }
 
@@ -273,17 +289,12 @@ public class ExternalMergeSort extends Operator {
 
         public Batch next() {
             if (eos) {
+                close();
                 return null;
             }
 
             try {
                 Batch batch = (Batch) in.readObject();
-                if (batch == null) {
-                    in.close();
-                    close();
-                    eos = true;
-                    return null;
-                }
                 return batch;
 
             }  catch (EOFException e) {
