@@ -135,7 +135,7 @@ private static Random random;
 	outmd.close();
 
 	    for(i=0;i<numtuple;i++){
-//System.out.println("in table generation: "+i);
+
 		int numb = random.nextInt(range[0]);
 		while(pk[numb]==true){
 		    numb = random.nextInt(range[0]);

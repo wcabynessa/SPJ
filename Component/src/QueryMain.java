@@ -104,8 +104,8 @@ public class QueryMain{
 
 
 /** This part is used When some random initial plan is required instead of comple optimized plan **/
-/**
 
+/**
 	RandomInitialPlan rip = new RandomInitialPlan(sqlquery);
 	Operator logicalroot = rip.prepareInitialPlan();
 	PlanCost pc = new PlanCost();
@@ -115,10 +115,8 @@ public class QueryMain{
 	System.out.println();
 **/
 
-
 	/** Use random Optimization algorithm to get a random optimized
-	    execution plan
-**/
+	    execution plan **/
 
 	RandomOptimizer ro = new RandomOptimizer(sqlquery);
 	Operator logicalroot = ro.getOptimizedPlan();

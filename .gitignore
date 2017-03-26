@@ -3,5 +3,13 @@
 *.iml
 .idea/
 out/
+Component/*
+Component/!*.*
+Component/*.det
+Component/*.md
+Component/*.stat
+Component/*.txt
+Component/*.tbl
+Component/*.out
 Component/testcases/
 Component/classes/
