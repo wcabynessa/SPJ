@@ -5,7 +5,6 @@
 out/
 Component/*
 Component/!*.*
-Component/*.det
 Component/*.md
 Component/*.stat
 Component/*.txt
