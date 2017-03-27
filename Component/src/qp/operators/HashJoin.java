@@ -124,7 +124,7 @@ public class HashJoin extends Join {
 						leftBatchNo[i]++;
 						out.close();
 
-					} catch (IOException io) {
+					} catch (Exception e) {
 						System.out.println("HashJoin: writing the temporary file error");
 						return false;
 					}
@@ -137,11 +137,9 @@ public class HashJoin extends Join {
 			}
 		}
 
-		//partitioning of the right operator
 		if (!right.open()) {
 			return false;
 		} else {
-
 			buffers = new Batch[numBucket];
 			rightBatchNo = new int[numBucket];
 
@@ -174,21 +172,21 @@ public class HashJoin extends Join {
 
 						buffers[index] = new Batch(rightBatchSize);
 					}
-
-					inBatch = right.next();
 				}
+
+				inBatch = right.next();
 			}
 
 			for (int i = 0; i < numBucket; i++) {
 				if (!buffers[i].isEmpty()) {
 					try {
-						String fileName = lfname + "-" + String.valueOf(i) + "-" + String.valueOf(rightBatchNo[i]);
+						String fileName = rfname + "-" + String.valueOf(i) + "-" + String.valueOf(rightBatchNo[i]);
 						out = new ObjectOutputStream(new FileOutputStream(fileName));
 						out.writeObject(buffers[i]);
 						rightBatchNo[i]++;
 						out.close();
 
-					} catch (IOException io) {
+					} catch (Exception e) {
 						System.out.println("HashJoin: writing the temporary file error");
 						return false;
 					}
@@ -204,6 +202,7 @@ public class HashJoin extends Join {
 	}
 
 	public Batch next() {
+		close();
 		return null;
 	}
 
@@ -215,6 +214,7 @@ public class HashJoin extends Join {
 				f.delete();
 			}
 		}
+
 
 		for(int i=0; i<numBucket; i++) {
 			for(int j=0; j<rightBatchNo[i]; j++) {
