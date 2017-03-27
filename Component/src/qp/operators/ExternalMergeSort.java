@@ -39,6 +39,7 @@ public class ExternalMergeSort extends Operator {
 
     ArrayList<Run> runs;  // Runs produced by the algorithm
     Run finalRun;  // Final run after sorting and merging
+    int[] cursors;  // Cursor of batches in sorting
 
     boolean eos;  // Indicate whether we reach the end
 
@@ -135,31 +136,29 @@ public class ExternalMergeSort extends Operator {
         Tuple smallestTuple = null;
         int runIndex = -1;  // Run contains smallest tuple
 
-        int[] cursors = new int[ending - starting];
         for (int i = starting;  i < ending;  i++) {
             int index = i - starting;  // Index of batch of this run stored in memory
-            if (cursors[index] == 0) {
+            if (inBatches[index] == null || cursors[index] >= inBatches[index].size()) {
                 if (runs.get(i).eos) {
                     inBatches[index] = null;
                 } else {
                     inBatches[index] = runs.get(i).next();
+                    cursors[index] = 0;
                 }
             }
 
             if (inBatches[index] != null) {
-                if (cursors[index] < inBatches[index].size()) {
-                    Tuple tuple = inBatches[i - starting].elementAt(cursors[index]);
-                    if (smallestTuple == null || Tuple.compareTuples(tuple, smallestTuple, keyIndex) < 0) {
-                        smallestTuple = tuple;
-                        runIndex = index;
-                    }
+                Tuple tuple = inBatches[index].elementAt(cursors[index]);
+                if (smallestTuple == null || Tuple.compareTuples(tuple, smallestTuple, keyIndex) < 0) {
+                    smallestTuple = tuple;
+                    runIndex = index;
                 }
             }
         }
         if (smallestTuple != null) {
             // Update cursor of run containing smallest tuple
             int index = runIndex;
-            cursors[index] = (cursors[index] == inBatches[index].size() - 1 ? 0 : cursors[index]);
+            cursors[index]++;
         }
         return smallestTuple;
     }
@@ -177,8 +176,12 @@ public class ExternalMergeSort extends Operator {
                 ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
 
                 int ending = Math.min(starting + getNumBuff() - 1, runs.size());
+                cursors = new int[ending - starting];  // Cursor of batches in buffer
                 for (int i = starting;  i < ending;  i++) {
                     runs.get(i).open();
+                    // We will read new batch if cursor >= batch size,
+                    // so initialize cursor with MAXVALUE
+                    cursors[i - starting] = Integer.MAX_VALUE;
                 }
 
                 // Repeat finding smallest tuple and output it
@@ -303,6 +306,7 @@ public class ExternalMergeSort extends Operator {
                 } catch (IOException io) {
                     System.out.println("ExternalMergeSort:Error in temporary file reading");
                 }
+                close();
                 eos = true;
 
             } catch (ClassNotFoundException c) {
