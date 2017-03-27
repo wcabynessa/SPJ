@@ -25,6 +25,8 @@ public class SortMergeJoin extends Join {
     public final int RIGHT_CHILD = 1;
     
     int batchSize;  // Number of tuples per batch
+    int leftBatchSize;  // Number of tuples per batch
+    int rightBatchSize;  // Number of tuples per batch
 
     /**
      * The following fields are useful during execution of
@@ -80,6 +82,8 @@ public class SortMergeJoin extends Join {
         // Calculate number of tuples per batch
         int tupleSize = schema.getTupleSize();
         batchSize = Batch.getPageSize() / tupleSize;
+        leftBatchSize = Batch.getPageSize() / left.getSchema().getTupleSize();
+        rightBatchSize = Batch.getPageSize() / right.getSchema().getTupleSize();
 
         // Obtain index of join attribute in left and right table
         Attribute leftattr = con.getLhs();
@@ -294,14 +298,15 @@ public class SortMergeJoin extends Join {
 
         createdFiles.add(fileName);
 
+        int childBatchSize = (childType == LEFT_CHILD ? leftBatchSize : rightBatchSize);
         Tuple tuple = (childType == LEFT_CHILD ? getLeftTuple() : getRightTuple());
-        Batch batch = new Batch(batchSize);
+        Batch batch = new Batch(childBatchSize);
         // Write all tuple with attr value equals to model to a temp file
         while (tuple != null && Tuple.compareTuples(tuple, model, (childType == LEFT_CHILD ? leftIndex : rightIndex)) == 0) {
             batch.add(tuple);
             if (batch.isFull()) {
                 out.writeObject(batch);
-                batch = new Batch(batchSize);
+                batch = new Batch(childBatchSize);
             }
             if (childType == LEFT_CHILD) {
                 incLeftBuffer();
