@@ -181,7 +181,7 @@ public class BlockNestedJoin extends Join {
                                                 lcurs = 0;
                                             } else {
                                                 batchIndex = i;
-                                                lcurs = j++;
+                                                lcurs = j + 1;
                                             }
                                             rcurs = 0;
                                         } else {
