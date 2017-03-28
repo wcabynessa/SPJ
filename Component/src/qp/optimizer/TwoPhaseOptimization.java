@@ -170,6 +170,7 @@ public class TwoPhaseOptimization {
         // NUMTER is number of times random restart
         int NUMITER = (numJoin == 0 ? 1 : numJoin * 2);
 
+        System.out.println("---------------------------Initial Plan----------------");
 
         /* Randomly restart the gradient descent until
          * the maximum specified number of random restarts (NUMITER)
@@ -188,6 +189,9 @@ public class TwoPhaseOptimization {
             initPlan = getOptimalPlanBySimulatedAnnealing(initPlan);
 
             int initCost = getPlanCost(initPlan);
+            Debug.PPrint(initPlan);
+            System.out.println("  "+initCost);
+
             if (initCost < MINCOST){
                 MINCOST = initCost;
                 finalPlan = initPlan;
@@ -381,6 +385,8 @@ public class TwoPhaseOptimization {
             return findNodeAt(((Select) node).getBase(), joinNum);
         } else if (node.getOpType() == OpType.PROJECT) {
             return findNodeAt(((Project) node).getBase(), joinNum);
+        } else if (node.getOpType() == OpType.SORT) {
+            return findNodeAt(((ExternalMergeSort) node).getBase(), joinNum);
         } else {
             return null;
         }
@@ -418,6 +424,10 @@ public class TwoPhaseOptimization {
             modifySchema(base);
             Vector attrlist = ((Project)node).getProjAttr();
             node.setSchema(base.getSchema().subSchema(attrlist));
+        } else if (node.getOpType() == OpType.SORT) {
+            Operator base = ((ExternalMergeSort)node).getBase();
+            modifySchema(base);
+            node.setSchema(base.getSchema());
         }
     }
 
@@ -476,6 +486,10 @@ public class TwoPhaseOptimization {
         } else if (node.getOpType() == OpType.PROJECT) {
             Operator base = makeExecPlan(((Project) node).getBase());
             ((Project) node).setBase(base);
+            return node;
+        } else if (node.getOpType() == OpType.SORT) {
+            Operator base = makeExecPlan(((ExternalMergeSort) node).getBase());
+            ((ExternalMergeSort) node).setBase(base);
             return node;
         } else {
             return node;
