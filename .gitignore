@@ -3,7 +3,7 @@
 *.iml
 .idea/
 out/
-Component/*
+
 Component/!*.*
 Component/*.md
 Component/*.stat
