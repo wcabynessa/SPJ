@@ -20,6 +20,7 @@ public class RandomInitialPlan{
     Vector selectionlist;     //List of select conditons
     Vector joinlist;          //List of join conditions
     Vector groupbylist;
+    Attribute orderbyAttr;
     int numJoin;    // Number of joins in this query
 
 
@@ -36,6 +37,7 @@ public class RandomInitialPlan{
 	joinlist = sqlquery.getJoinList();
 	groupbylist = sqlquery.getGroupByList();
 	numJoin = joinlist.size();
+    orderbyAttr = sqlquery.getOrderBy();
 
 
     }
@@ -59,6 +61,7 @@ public class RandomInitialPlan{
 	    createJoinOp();
 	}
 	createProjectOp();
+    createOrderByOp();
 	return root;
     }
 
@@ -203,6 +206,16 @@ public class RandomInitialPlan{
 	    Schema newSchema = base.getSchema().subSchema(projectlist);
 	    root.setSchema(newSchema);
 	}
+    }
+
+    public void createOrderByOp() {
+        if (orderbyAttr == null) {
+            return;
+        }
+
+        Operator base = root;
+        int keyIndex = base.getSchema().indexOf(orderbyAttr);
+        root = new ExternalMergeSort(base, keyIndex, OpType.SORT);
     }
 
     private void modifyHashtable(Operator old, Operator newop){

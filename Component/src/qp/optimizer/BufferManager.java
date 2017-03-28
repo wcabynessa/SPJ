@@ -13,10 +13,10 @@ public class BufferManager{
     static int buffPerJoin;
 
 
-    public BufferManager(int numBuffer, int numJoin){
+    public BufferManager(int numBuffer, int numOp){
 	this.numBuffer = numBuffer;
 	this.numJoin = numJoin;
-	buffPerJoin = numBuffer/numJoin;
+	buffPerJoin = numBuffer/numOp;
     }
 
     public static int getBuffersPerJoin(){

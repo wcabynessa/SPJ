@@ -47,6 +47,15 @@ public class ExternalMergeSort extends Operator {
         super(type);
         this.base = base;
         this.keyIndex= keyIndex;
+        this.schema = base.getSchema();
+    }
+
+    public void setBase(Operator base) {
+        this.base = base;
+    }
+
+    public Operator getBase() {
+        return this.base;
     }
 
     public void setNumBuff(int numBuff) {
@@ -325,5 +334,12 @@ public class ExternalMergeSort extends Operator {
             f.delete();
             return true;
         }
+    }
+
+    public Operator clone() {
+        Operator newbase = (Operator) base.clone();
+        ExternalMergeSort newsort = new ExternalMergeSort(newbase,keyIndex,optype);
+        newsort.setSchema(newbase.getSchema());
+        return newsort;
     }
 }

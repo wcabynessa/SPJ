@@ -39,7 +39,7 @@ action code {:
 terminal 	TokenValue ID;
 terminal        COMMA,SEMI,DOT,STAR;
 terminal      	LESSTHAN, GREATERTHAN,LTOE,GTOE,EQUAL,NOTEQUAL,AND,OR;     
-terminal	SELECT,FROM,WHERE,GROUPBY,DISTINCT;
+terminal	SELECT,FROM,WHERE,GROUPBY,DISTINCT,ORDERBY;
 terminal 	TokenValue STRINGLIT;
 
 /* Non terminals */	
@@ -59,6 +59,12 @@ sqlquery ::= sqlquery:s  GROUPBY attlist:a
 		s.setGroupByList(a);
 		parser.query=s;
 	
+		:}
+		 | sqlquery:s  ORDERBY attribute:a
+		{:
+		s.setOrderBy(a);
+		parser.query=s;
+
 		:}
 	     | SELECT attlist:a FROM tablelist:t WHERE conditionlist:c
 		{:

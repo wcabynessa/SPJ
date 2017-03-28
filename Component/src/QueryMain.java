@@ -53,7 +53,7 @@ public class QueryMain{
 
 	Scaner sc = new Scaner(source);
 	parser p = new parser();
-	p.setScanner(sc);
+    p.setScanner(sc);
 
 
 	/** parse the query **/
@@ -69,6 +69,7 @@ public class QueryMain{
 
 	SQLQuery sqlquery = p.getSQLQuery();
 	int numJoin = sqlquery.getNumJoin();
+    int numSort = sqlquery.getNumSort();
 
 
 	/** If there are joins then assigns buffers to each join operator
@@ -79,13 +80,13 @@ public class QueryMain{
 	**/
 
 
-	if(numJoin !=0){
+	if(numJoin != 0 || numSort != 0){
 	    System.out.println("enter the number of buffers available");
 
 	    try {
 		temp = in.readLine();
 		int numBuff = Integer.parseInt(temp);
-		BufferManager bm = new BufferManager(numBuff,numJoin);
+		BufferManager bm = new BufferManager(numBuff,numJoin + numSort);
 	    } catch (Exception e) {
 		e.printStackTrace();
 	 }
@@ -96,7 +97,7 @@ public class QueryMain{
 	/** Let check the number of buffers available is enough or not **/
 
 	int numBuff = BufferManager.getBuffersPerJoin();
-	if(numJoin>0 && numBuff<3){
+	if((numJoin>0 || numSort>0)&& numBuff<3){
 	    System.out.println("Minimum 3 buffers are required per a join operator ");
 	    System.exit(1);
 	}

@@ -358,6 +358,8 @@ public class RandomOptimizer{
             return findNodeAt(((Select)node).getBase(),joinNum);
         }else if(node.getOpType()==OpType.PROJECT){
             return findNodeAt(((Project)node).getBase(),joinNum);
+        }else if (node.getOpType()==OpType.SORT) {
+            return findNodeAt(((ExternalMergeSort)node).getBase(),joinNum);
         }else{
             return null;
         }
@@ -385,6 +387,10 @@ public class RandomOptimizer{
             modifySchema(base);
             Vector attrlist = ((Project)node).getProjAttr();
             node.setSchema(base.getSchema().subSchema(attrlist));
+        }else if (node.getOpType()==OpType.SORT) {
+            Operator base = ((ExternalMergeSort)node).getBase();
+            modifySchema(base);
+            node.setSchema(base.getSchema());
         }
     }
 
@@ -445,6 +451,13 @@ public class RandomOptimizer{
         }else if(node.getOpType() == OpType.PROJECT){
             Operator base = makeExecPlan(((Project)node).getBase());
             ((Project)node).setBase(base);
+            return node;
+        }else if (node.getOpType() == OpType.SORT) {
+            Operator base = makeExecPlan(((ExternalMergeSort)node).getBase());
+            ((ExternalMergeSort)node).setBase(base);
+
+            int numbuff = BufferManager.getBuffersPerJoin();
+            ((ExternalMergeSort)node).setNumBuff(numbuff);
             return node;
         }else{
             return node;

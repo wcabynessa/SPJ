@@ -21,6 +21,8 @@ public class SQLQuery {
     Vector groupbyList;        //List of attibutes in groupby clause
     boolean isDistinct=false;   // Whether distinct key word appeared in select clause
 
+    Attribute orderByAttr;
+
 
     public SQLQuery(Vector list1,Vector list2,Vector list3,Vector list4){
 	projectList=list1;
@@ -101,6 +103,18 @@ public class SQLQuery {
 
     public Vector getGroupByList(){
 	return groupbyList;
+    }
+
+    public void setOrderBy(Attribute attr) {
+    orderByAttr = attr;
+    }
+
+    public Attribute getOrderBy() {
+    return orderByAttr;
+    }
+
+    public int getNumSort() {
+        return (orderByAttr == null ? 0 : 1);
     }
 
     public int getNumJoin(){

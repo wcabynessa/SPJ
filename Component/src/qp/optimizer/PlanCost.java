@@ -68,9 +68,18 @@ public class PlanCost{
 		    return getStatistics((Project)node);
 		} else if(node.getOpType() == OpType.SCAN){
 		    return getStatistics((Scan)node);
-		}
+		} else if (node.getOpType() == OpType.SORT) {
+            return getStatistics((ExternalMergeSort)node);
+        }
 
 		return -1;
+    }
+
+    /**
+     * Assume that sorting will not change any statistics
+     **/
+    protected int getStatistics(ExternalMergeSort node){
+	    return calculateCost(node.getBase());
     }
 
 
