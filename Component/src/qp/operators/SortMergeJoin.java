@@ -141,6 +141,7 @@ public class SortMergeJoin extends Join {
                             return outBatch;
                         }
                     }
+                    cleanTempFiles();
                     inMergingState = false;
                 }
 
@@ -190,6 +191,7 @@ public class SortMergeJoin extends Join {
                             return outBatch;
                         }
                     }
+                    cleanTempFiles();
                     inMergingState = false;
                 }
 
@@ -206,12 +208,17 @@ public class SortMergeJoin extends Join {
         return outBatch;
     }
 
-    /** Close the operator */
-    public boolean close(){
+    public void cleanTempFiles() {
         for (String fileName : createdFiles) {
             File file = new File(fileName);
             file.delete();
         }
+        createdFiles.clear();
+    }
+
+    /** Close the operator */
+    public boolean close(){
+        cleanTempFiles();
         return sortedLeft.close() && sortedRight.close();
     }
 
