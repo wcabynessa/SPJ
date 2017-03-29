@@ -51,6 +51,7 @@ public class SortMergeJoin extends Join {
     ExternalMergeSort sortedRight;
 
     ArrayList<String> createdFiles;  // Keeps track of created files
+    ArrayList<ObjectInputStream> openInputs;
 
 
     /* Variables used for merging state */
@@ -115,6 +116,7 @@ public class SortMergeJoin extends Join {
 
         // Array for temp files
         createdFiles = new ArrayList<String>();
+        openInputs = new ArrayList<ObjectInputStream>();
 
         return true;
     }
@@ -177,6 +179,8 @@ public class SortMergeJoin extends Join {
 
                     leftFile = new ObjectInputStream(new FileInputStream(leftFileName));
                     rightFile = new ObjectInputStream(new FileInputStream(rightFileName));
+                    openInputs.add(leftFile);
+                    openInputs.add(rightFile);
 
                     leftMergeBatch = (Batch) leftFile.readObject();
                     rightMergeBatch = (Batch) rightFile.readObject();
@@ -208,17 +212,20 @@ public class SortMergeJoin extends Join {
         return outBatch;
     }
 
-    public void cleanTempFiles() {
+    public void cleanTempFiles() throws IOException {
+        for (ObjectInputStream in : openInputs) {
+            in.close();
+        }
         for (String fileName : createdFiles) {
             File file = new File(fileName);
             file.delete();
         }
+        openInputs.clear();
         createdFiles.clear();
     }
 
     /** Close the operator */
-    public boolean close(){
-        cleanTempFiles();
+    public boolean close() {
         return sortedLeft.close() && sortedRight.close();
     }
 
