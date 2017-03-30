@@ -489,6 +489,8 @@ public class TwoPhaseOptimization {
             return node;
         } else if (node.getOpType() == OpType.SORT) {
             Operator base = makeExecPlan(((ExternalMergeSort) node).getBase());
+            int numbuff = BufferManager.getBuffersPerJoin();
+            ((ExternalMergeSort) node).setNumBuff(numbuff);
             ((ExternalMergeSort) node).setBase(base);
             return node;
         } else {
