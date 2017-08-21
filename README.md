@@ -1,2 +1,2 @@
-# CS3223
- A simple SPJ (Select-Project-Join) query engine
+# SPJ
+ A simplified query engine that only supports a small subset of SQL queries.
